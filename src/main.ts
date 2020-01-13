@@ -15,7 +15,7 @@ async function createScriptFile(inlineScript: string): Promise<string> {
     const filePath: string = join(TEMP_DIRECTORY, fileName);
     writeFileSync(filePath, `${inlineScript}`);
     chmodSync(filePath, 0o755);
-    return fileName;
+    return filePath;
 }
 
 async function deleteFile(filePath: string) {
@@ -53,17 +53,16 @@ async function main() {
         } else {
             let o365CLIScript: string = core.getInput("O365_CLI_SCRIPT");
             if (o365CLIScript) {
-                let o365CLIScriptFileName: string = '';
+                let o365CLIScriptFilePath: string = '';
                 try {
                     core.info("ℹ️ Executing script passed...");
-                    o365CLIScriptFileName = await createScriptFile(o365CLIScript);
-                    await exec(o365CLIScriptFileName);
+                    o365CLIScriptFilePath = await createScriptFile(o365CLIScript);
+                    await exec(o365CLIScriptFilePath);
                     core.info("✅ Script execution complete.");
                 } catch (err) {
                     core.error("🚨 Executing script failed.");
                     core.setFailed(err);
                 } finally {
-                    const o365CLIScriptFilePath: string = join(TEMP_DIRECTORY, o365CLIScriptFileName);
                     await deleteFile(o365CLIScriptFilePath);
                 }
 

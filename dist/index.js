@@ -80,7 +80,7 @@ function createScriptFile(inlineScript) {
         const filePath = path_1.join(TEMP_DIRECTORY, fileName);
         fs_1.writeFileSync(filePath, `${inlineScript}`);
         fs_1.chmodSync(filePath, 0o755);
-        return fileName;
+        return filePath;
     });
 }
 function deleteFile(filePath) {
@@ -122,11 +122,11 @@ function main() {
             else {
                 let o365CLIScript = core.getInput("O365_CLI_SCRIPT");
                 if (o365CLIScript) {
-                    let o365CLIScriptFileName = '';
+                    let o365CLIScriptFilePath = '';
                     try {
                         core.info("ℹ️ Executing script passed...");
-                        o365CLIScriptFileName = yield createScriptFile(o365CLIScript);
-                        yield exec_1.exec(o365CLIScriptFileName);
+                        o365CLIScriptFilePath = yield createScriptFile(o365CLIScript);
+                        yield exec_1.exec(o365CLIScriptFilePath);
                         core.info("✅ Script execution complete.");
                     }
                     catch (err) {
@@ -134,7 +134,6 @@ function main() {
                         core.setFailed(err);
                     }
                     finally {
-                        const o365CLIScriptFilePath = path_1.join(TEMP_DIRECTORY, o365CLIScriptFileName);
                         yield deleteFile(o365CLIScriptFilePath);
                     }
                 }
