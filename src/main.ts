@@ -59,8 +59,7 @@ async function executeO365CLICommand(command: string): Promise<any> {
         return o365CLICommandOutput;
     }
     catch (err) {
-        error("Executing script failed");
-        setFailed(err);
+        throw new Error(err);
     }
 }
 

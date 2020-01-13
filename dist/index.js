@@ -120,8 +120,7 @@ function executeO365CLICommand(command) {
             return o365CLICommandOutput;
         }
         catch (err) {
-            core_1.error("Executing script failed");
-            core_1.setFailed(err);
+            throw new Error(err);
         }
     });
 }
