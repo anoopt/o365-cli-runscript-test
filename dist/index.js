@@ -57,8 +57,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = __webpack_require__(682);
+const core = __importStar(__webpack_require__(682));
 const exec_1 = __webpack_require__(736);
 const io_1 = __webpack_require__(120);
 const fs_1 = __webpack_require__(747);
@@ -67,20 +74,20 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             o365CLIPath = yield io_1.which("o365", true);
-            const appFilePath = core_1.getInput("APP_FILE_PATH");
-            const scope = core_1.getInput("SCOPE");
-            const siteCollectionUrl = core_1.getInput("SITE_COLLECTION_URL");
-            const skipFeatureDeployment = core_1.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
-            const overwrite = core_1.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
+            const appFilePath = core.getInput("APP_FILE_PATH");
+            const scope = core.getInput("SCOPE");
+            const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
+            const skipFeatureDeployment = core.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
+            const overwrite = core.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
             let appId;
             fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    core_1.error("Please check if the app file path is correct.");
-                    core_1.setFailed(err.message);
+                    core.error("Please check if the app file path is correct.");
+                    core.setFailed(err.message);
                 }
                 else {
                     try {
-                        core_1.info("STarting deployment...");
+                        core.info("STarting deployment...");
                         if (scope == "sitecollection") {
                             appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${overwrite}`);
                             yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${skipFeatureDeployment}`);
@@ -90,19 +97,19 @@ function main() {
                             appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} ${overwrite}`);
                             yield executeO365CLICommand(`spo app deploy --id ${appId} ${skipFeatureDeployment}`);
                         }
-                        core_1.info("Deployment complete.");
+                        core.info("Deployment complete.");
                     }
-                    catch (error) {
-                        error("Executing script failed");
-                        core_1.setFailed(error);
+                    catch (err) {
+                        core.error("Executing script failed");
+                        core.setFailed(err);
                     }
                 }
-                core_1.setOutput("APP_ID", appId);
+                core.setOutput("APP_ID", appId);
             }));
         }
         catch (err) {
-            core_1.error("Executing script failed");
-            core_1.setFailed(err);
+            core.error("Executing script failed");
+            core.setFailed(err);
         }
     });
 }
@@ -120,8 +127,8 @@ function executeO365CLICommand(command) {
             return o365CLICommandOutput;
         }
         catch (err) {
-            core_1.error("Executing script failed");
-            core_1.setFailed(err);
+            core.error("Executing script failed");
+            core.setFailed(err);
             throw new Error(err);
         }
     });
