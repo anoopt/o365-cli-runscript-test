@@ -67,69 +67,43 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(682));
 const exec_1 = __webpack_require__(736);
-const io_1 = __webpack_require__(120);
 const fs_1 = __webpack_require__(747);
-let o365CLIPath;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            o365CLIPath = yield io_1.which("o365", true);
-            const appFilePath = core.getInput("APP_FILE_PATH");
-            const scope = core.getInput("SCOPE");
-            const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
-            const skipFeatureDeployment = core.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
-            const overwrite = core.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
-            let appId;
-            fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
-                if (err) {
-                    core.error("Please check if the app file path is correct.");
-                    core.setFailed(err.message);
-                }
-                else {
-                    try {
-                        core.info("STarting deployment...");
-                        if (scope == "sitecollection") {
-                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${overwrite}`);
-                            yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${skipFeatureDeployment}`);
-                            yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection `);
+            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
+            if (o365CLIScriptPath) {
+                fs_1.access(o365CLIScriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
+                    if (err) {
+                        core.error("Please check if the script path correct.");
+                        core.setFailed(err.message);
+                    }
+                    else {
+                        let fileExtension = o365CLIScriptPath.split('.').pop();
+                        fs_1.chmodSync(o365CLIScriptPath, 0o755);
+                        if (fileExtension == "ps1") {
+                            yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
                         }
                         else {
-                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} ${overwrite}`);
-                            yield executeO365CLICommand(`spo app deploy --id ${appId} ${skipFeatureDeployment}`);
+                            yield exec_1.exec(o365CLIScriptPath);
                         }
-                        core.info("Deployment complete.");
                     }
-                    catch (err) {
-                        core.error("Executing script failed");
-                        core.setFailed(err);
-                    }
-                }
-                core.setOutput("APP_ID", appId);
-            }));
-        }
-        catch (err) {
-            core.error("Executing script failed");
-            core.setFailed(err);
-        }
-    });
-}
-function executeO365CLICommand(command) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let o365CLICommandOutput = '';
-        const options = {};
-        options.listeners = {
-            stdout: (data) => {
-                o365CLICommandOutput += data.toString();
+                }));
             }
-        };
-        try {
-            yield exec_1.exec(`"${o365CLIPath}" ${command}`, [], options);
-            return o365CLICommandOutput;
+            else {
+                let o365CLICommand = core.getInput("O365_CLI_COMMAND");
+                if (o365CLICommand) {
+                    yield exec_1.exec(o365CLICommand);
+                }
+                else {
+                    core.error("Please pass either a command or a file containing commands.");
+                    core.setFailed("No arguments passed.");
+                }
+            }
         }
-        catch (err) {
+        catch (error) {
             core.error("Executing script failed");
-            core.setFailed(err);
-            throw new Error(err);
+            core.setFailed(error);
         }
     });
 }
