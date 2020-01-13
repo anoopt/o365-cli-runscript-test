@@ -74,7 +74,8 @@ function main() {
         try {
             let scriptpath = core.getInput("SCRIPT_PATH");
             fs_1.chmodSync(scriptpath, 0o755);
-            yield exec.exec(scriptpath);
+            //await exec.exec(scriptpath);
+            yield exec.exec('pwsh', ['-f', scriptpath]);
         }
         catch (error) {
             core.error("Executing script failed");

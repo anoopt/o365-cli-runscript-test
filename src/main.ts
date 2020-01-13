@@ -9,7 +9,8 @@ async function main() {
         let scriptpath = core.getInput("SCRIPT_PATH");
         
         chmodSync(scriptpath, 0o755); 
-        await exec.exec(scriptpath);        
+        //await exec.exec(scriptpath);
+        await exec.exec('pwsh', ['-f', scriptpath]);        
 
     } catch (error) {
         core.error("Executing script failed");
