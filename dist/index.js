@@ -76,7 +76,7 @@ function main() {
                 core.info("ℹ️ Executing script...");
                 fs_1.access(o365CLIScriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
-                        core.error("Please check if the script path correct.");
+                        core.error("🚨 Please check if the script path correct.");
                         core.setFailed(err.message);
                     }
                     else {
@@ -88,7 +88,7 @@ function main() {
                         else {
                             yield exec_1.exec(o365CLIScriptPath);
                         }
-                        core.debug("✅ Script execution complete.");
+                        core.info("✅ Script execution complete.");
                     }
                 }));
             }
@@ -97,16 +97,16 @@ function main() {
                 if (o365CLICommand) {
                     core.info("ℹ️ Executing command");
                     yield exec_1.exec(o365CLICommand);
-                    core.debug("✅ Command execution complete");
+                    core.info("✅ Command execution complete");
                 }
                 else {
-                    core.error("Please pass either a command or a file containing commands.");
-                    core.setFailed("🚨 No arguments passed.");
+                    core.error("🚨 Please pass either a command or a file containing commands.");
+                    core.setFailed("No arguments passed.");
                 }
             }
         }
         catch (error) {
-            core.error("Executing script failed");
+            core.error("🚨 Executing script failed");
             core.setFailed(error);
         }
     });
