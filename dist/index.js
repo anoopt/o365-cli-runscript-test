@@ -106,9 +106,16 @@ function main() {
 }
 function executeO365CLICommand(command) {
     return __awaiter(this, void 0, void 0, function* () {
+        let myOutput = '';
+        const options = {};
+        options.listeners = {
+            stdout: (data) => {
+                myOutput += data.toString();
+            }
+        };
         try {
-            let execresult = yield exec.exec(`"${o365CLIPath}" ${command}`, [], {});
-            return execresult;
+            yield exec.exec(`"${o365CLIPath}" ${command}`, [], options);
+            return myOutput;
         }
         catch (error) {
             throw new Error(error);
