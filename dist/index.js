@@ -57,36 +57,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(682));
-const exec = __importStar(__webpack_require__(736));
-const io = __importStar(__webpack_require__(120));
+const core_1 = __webpack_require__(682);
+const exec_1 = __webpack_require__(736);
+const io_1 = __webpack_require__(120);
 const fs_1 = __webpack_require__(747);
 let o365CLIPath;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            o365CLIPath = yield io.which("o365", true);
-            const appFilePath = core.getInput("APP_FILE_PATH");
-            const scope = core.getInput("SCOPE");
-            const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
-            const skipFeatureDeployment = core.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
-            const overwrite = core.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
+            o365CLIPath = yield io_1.which("o365", true);
+            const appFilePath = core_1.getInput("APP_FILE_PATH");
+            const scope = core_1.getInput("SCOPE");
+            const siteCollectionUrl = core_1.getInput("SITE_COLLECTION_URL");
+            const skipFeatureDeployment = core_1.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
+            const overwrite = core_1.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
             let appId;
             fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    core.error("Please check if the app file path is correct.");
-                    core.setFailed(err.message);
+                    core_1.error("Please check if the app file path is correct.");
+                    core_1.setFailed(err.message);
                 }
                 else {
                     try {
+                        core_1.info("STarting deployment...");
                         if (scope == "sitecollection") {
                             appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${overwrite}`);
                             yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${skipFeatureDeployment}`);
@@ -96,18 +90,19 @@ function main() {
                             appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} ${overwrite}`);
                             yield executeO365CLICommand(`spo app deploy --id ${appId} ${skipFeatureDeployment}`);
                         }
+                        core_1.info("Deployment complete.");
                     }
                     catch (error) {
-                        core.error("Executing script failed");
-                        core.setFailed(error);
+                        error("Executing script failed");
+                        core_1.setFailed(error);
                     }
                 }
-                core.setOutput("APP_ID", appId);
+                core_1.setOutput("APP_ID", appId);
             }));
         }
         catch (error) {
-            core.error("Executing script failed");
-            core.setFailed(error);
+            error("Executing script failed");
+            core_1.setFailed(error);
         }
     });
 }
@@ -121,7 +116,7 @@ function executeO365CLICommand(command) {
             }
         };
         try {
-            yield exec.exec(`"${o365CLIPath}" ${command}`, [], options);
+            yield exec_1.exec(`"${o365CLIPath}" ${command}`, [], options);
             return o365CLICommandOutput;
         }
         catch (error) {

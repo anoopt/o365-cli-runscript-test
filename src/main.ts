@@ -1,28 +1,29 @@
-import * as core from '@actions/core';
-import * as exec from '@actions/exec';
-import * as io from '@actions/io';
+import {getInput, info, error, setFailed, setOutput} from '@actions/core';
+import { exec } from '@actions/exec';
+import { which } from '@actions/io';
 import { access, constants } from 'fs';
 
 let o365CLIPath: string;
 
 async function main() {
     try {
-        o365CLIPath = await io.which("o365", true);
+        o365CLIPath = await which("o365", true);
 
-        const appFilePath: string = core.getInput("APP_FILE_PATH");
-        const scope: string = core.getInput("SCOPE");
-        const siteCollectionUrl: string = core.getInput("SITE_COLLECTION_URL");
-        const skipFeatureDeployment: string = core.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
-        const overwrite: string = core.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
+        const appFilePath: string = getInput("APP_FILE_PATH");
+        const scope: string = getInput("SCOPE");
+        const siteCollectionUrl: string = getInput("SITE_COLLECTION_URL");
+        const skipFeatureDeployment: string = getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
+        const overwrite: string = getInput("OVERWRITE") == "true" ? "--overwrite" : "";
         
         let appId: string;
 
         access(appFilePath, constants.F_OK, async (err) => {
             if (err) {
-                core.error("Please check if the app file path is correct.");
-                core.setFailed(err.message);
+                error("Please check if the app file path is correct.");
+                setFailed(err.message);
             } else {
                 try {
+                    info("STarting deployment...");
                     if (scope == "sitecollection") {
                         appId = await executeO365CLICommand(`spo app add -p ${appFilePath} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${overwrite}`);
                         await executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${skipFeatureDeployment}`);
@@ -31,16 +32,17 @@ async function main() {
                         appId = await executeO365CLICommand(`spo app add -p ${appFilePath} ${overwrite}`);
                         await executeO365CLICommand(`spo app deploy --id ${appId} ${skipFeatureDeployment}`)
                     }
+                    info("Deployment complete.");
                 } catch (error) {
-                    core.error("Executing script failed");
-                    core.setFailed(error);
+                    error("Executing script failed");
+                    setFailed(error);
                 }
             }
-            core.setOutput("APP_ID", appId);
+            setOutput("APP_ID", appId);
         });
     } catch (error) {
-        core.error("Executing script failed");
-        core.setFailed(error);
+        error("Executing script failed");
+        setFailed(error);
     }
 }
 
@@ -53,7 +55,7 @@ async function executeO365CLICommand(command: string): Promise<any> {
         }
     };
     try {
-        await exec.exec(`"${o365CLIPath}" ${command}`, [], options);
+        await exec(`"${o365CLIPath}" ${command}`, [], options);
         return o365CLICommandOutput;
     }
     catch (error) {
