@@ -68,19 +68,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(682));
 const exec = __importStar(__webpack_require__(736));
 const fs_1 = __webpack_require__(747);
-var cliPath;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let scriptpath = core.getInput("SCRIPT_PATH");
-            let fileExtension = scriptpath.split('.').pop();
-            fs_1.chmodSync(scriptpath, 0o755);
-            if (fileExtension == "ps1") {
-                yield exec.exec('pwsh', ['-f', scriptpath]);
-            }
-            else {
-                yield exec.exec(scriptpath);
-            }
+            let scriptPath = core.getInput("SCRIPT_PATH");
+            fs_1.access(scriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
+                if (err) {
+                    core.error("Please check if the script path correct.");
+                    core.setFailed(err.message);
+                }
+                else {
+                    let fileExtension = scriptPath.split('.').pop();
+                    fs_1.chmodSync(scriptPath, 0o755);
+                    if (fileExtension == "ps1") {
+                        yield exec.exec('pwsh', ['-f', scriptPath]);
+                    }
+                    else {
+                        yield exec.exec(scriptPath);
+                    }
+                }
+            }));
         }
         catch (error) {
             core.error("Executing script failed");
