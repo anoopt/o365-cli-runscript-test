@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
-import {chmodSync} from 'fs';
+import { chmodSync } from 'fs';
 
 var cliPath: string;
 
@@ -9,8 +9,12 @@ async function main() {
         let scriptpath = core.getInput("SCRIPT_PATH");
         
         chmodSync(scriptpath, 0o755); 
-        //await exec.exec(scriptpath);
-        await exec.exec('pwsh', ['-f', scriptpath]);        
+
+        if(process.env.RUNNER_OS == "Windows") {
+            await exec.exec('pwsh', ['-f', scriptpath]);
+        } else {
+            await exec.exec(scriptpath);
+        }       
 
     } catch (error) {
         core.error("Executing script failed");
