@@ -73,8 +73,9 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let scriptpath = core.getInput("SCRIPT_PATH");
+            let fileExtension = scriptpath.split('.').pop();
             fs_1.chmodSync(scriptpath, 0o755);
-            if (process.env.RUNNER_OS == "Windows") {
+            if (fileExtension == "ps1") {
                 yield exec.exec('pwsh', ['-f', scriptpath]);
             }
             else {
