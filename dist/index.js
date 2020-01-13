@@ -84,15 +84,20 @@ function main() {
                     core.setFailed(err.message);
                 }
                 else {
-                    if (scope == "sitecollection") {
-                        appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                        yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                        yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`);
+                    try {
+                        if (scope == "sitecollection") {
+                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                            yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                            yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`);
+                        }
+                        else {
+                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
+                            yield executeO365CLICommand(`spo app deploy --id ${appId}`);
+                        }
                     }
-                    else {
-                        appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
-                        core.info(appId);
-                        yield executeO365CLICommand(`spo app deploy --id ${appId}`);
+                    catch (error) {
+                        core.error("Executing script failed");
+                        core.setFailed(error);
                     }
                 }
                 core.setOutput("APP_ID", appId);
@@ -106,16 +111,16 @@ function main() {
 }
 function executeO365CLICommand(command) {
     return __awaiter(this, void 0, void 0, function* () {
-        let myOutput = '';
+        let o365CLICommandOutput = '';
         const options = {};
         options.listeners = {
             stdout: (data) => {
-                myOutput += data.toString();
+                o365CLICommandOutput += data.toString();
             }
         };
         try {
             yield exec.exec(`"${o365CLIPath}" ${command}`, [], options);
-            return myOutput;
+            return o365CLICommandOutput;
         }
         catch (error) {
             throw new Error(error);

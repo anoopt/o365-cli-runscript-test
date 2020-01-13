@@ -20,14 +20,18 @@ async function main() {
                 core.error("Please check if the app file path is correct.");
                 core.setFailed(err.message);
             } else {
-                if (scope == "sitecollection") {
-                    appId = await executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                    await executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                    await executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`)
-                } else {
-                    appId = await executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
-                    core.info(appId);
-                    await executeO365CLICommand(`spo app deploy --id ${appId}`)
+                try {
+                    if (scope == "sitecollection") {
+                        appId = await executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                        await executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                        await executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`)
+                    } else {
+                        appId = await executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
+                        await executeO365CLICommand(`spo app deploy --id ${appId}`)
+                    }
+                } catch (error) {
+                    core.error("Executing script failed");
+                    core.setFailed(error);
                 }
             }
             core.setOutput("APP_ID", appId);
@@ -39,16 +43,16 @@ async function main() {
 }
 
 async function executeO365CLICommand(command: string): Promise<any> {
-    let myOutput = '';
+    let o365CLICommandOutput = '';
     const options: any = {};
     options.listeners = {
         stdout: (data: Buffer) => {
-            myOutput += data.toString();
+            o365CLICommandOutput += data.toString();
         }
     };
     try {
         await exec.exec(`"${o365CLIPath}" ${command}`, [], options);
-        return myOutput;
+        return o365CLICommandOutput;
     }
     catch (error) {
         throw new Error(error);
