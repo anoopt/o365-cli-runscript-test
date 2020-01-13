@@ -73,6 +73,7 @@ function main() {
         try {
             let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
             if (o365CLIScriptPath) {
+                core.info("ℹ️ Executing script...");
                 fs_1.access(o365CLIScriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         core.error("Please check if the script path correct.");
@@ -87,17 +88,20 @@ function main() {
                         else {
                             yield exec_1.exec(o365CLIScriptPath);
                         }
+                        core.debug("✅ Script execution complete.");
                     }
                 }));
             }
             else {
                 let o365CLICommand = core.getInput("O365_CLI_COMMAND");
                 if (o365CLICommand) {
+                    core.info("ℹ️ Executing command");
                     yield exec_1.exec(o365CLICommand);
+                    core.debug("✅ Command execution complete");
                 }
                 else {
                     core.error("Please pass either a command or a file containing commands.");
-                    core.setFailed("No arguments passed.");
+                    core.setFailed("🚨 No arguments passed.");
                 }
             }
         }
