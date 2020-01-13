@@ -71,16 +71,16 @@ const fs_1 = __webpack_require__(747);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
+            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH", { required: true });
             if (o365CLIScriptPath) {
-                core.info("ℹ️ Executing script...");
                 fs_1.access(o365CLIScriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         core.error("🚨 Please check if the script path correct.");
                         core.setFailed(err.message);
                     }
                     else {
-                        let fileExtension = o365CLIScriptPath.split('.').pop();
+                        core.info("ℹ️ Executing script...");
+                        const fileExtension = o365CLIScriptPath.split('.').pop();
                         fs_1.chmodSync(o365CLIScriptPath, 0o755);
                         if (fileExtension == "ps1") {
                             yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
@@ -93,16 +93,8 @@ function main() {
                 }));
             }
             else {
-                let o365CLICommand = core.getInput("O365_CLI_COMMAND");
-                if (o365CLICommand) {
-                    core.info("ℹ️ Executing command");
-                    yield exec_1.exec(o365CLICommand);
-                    core.info("✅ Command execution complete");
-                }
-                else {
-                    core.error("🚨 Please pass either a command or a file containing commands.");
-                    core.setFailed("No arguments passed.");
-                }
+                core.error("🚨 Please provide - O365_CLI_SCRIPT_PATH - path to the file containing commands.");
+                core.setFailed("No arguments passed.");
             }
         }
         catch (error) {
