@@ -77,6 +77,7 @@ function main() {
             const appFilePath = core.getInput("APP_FILE_PATH");
             const scope = core.getInput("SCOPE");
             const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
+            let appId;
             fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
                     core.error("Please check if the app file path is correct.");
@@ -84,15 +85,17 @@ function main() {
                 }
                 else {
                     if (scope == "sitecollection") {
-                        let appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                        appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
                         yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
                         yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`);
                     }
                     else {
-                        let appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
+                        appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
+                        core.info(appId);
                         yield executeO365CLICommand(`spo app deploy --id ${appId}`);
                     }
                 }
+                core.setOutput("APP_ID", appId);
             }));
         }
         catch (error) {
