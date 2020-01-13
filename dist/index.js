@@ -67,24 +67,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(682));
 const exec = __importStar(__webpack_require__(736));
+const io = __importStar(__webpack_require__(120));
 const fs_1 = __webpack_require__(747);
+let o365CLIPath;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let scriptPath = core.getInput("SCRIPT_PATH");
-            fs_1.access(scriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
+            o365CLIPath = yield io.which("o365", true);
+            const appFilePath = core.getInput("APP_FILE_PATH");
+            const scope = core.getInput("SCOPE");
+            const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
+            fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    core.error("Please check if the script path correct.");
+                    core.error("Please check if the app file path is correct.");
                     core.setFailed(err.message);
                 }
                 else {
-                    let fileExtension = scriptPath.split('.').pop();
-                    fs_1.chmodSync(scriptPath, 0o755);
-                    if (fileExtension == "ps1") {
-                        yield exec.exec('pwsh', ['-f', scriptPath]);
+                    if (scope == "sitecollection") {
+                        let appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                        yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
+                        yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`);
                     }
                     else {
-                        yield exec.exec(scriptPath);
+                        let appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
+                        yield executeO365CLICommand(`spo app deploy --id ${appId}`);
                     }
                 }
             }));
@@ -92,6 +98,17 @@ function main() {
         catch (error) {
             core.error("Executing script failed");
             core.setFailed(error);
+        }
+    });
+}
+function executeO365CLICommand(command) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let execresult = yield exec.exec(`"${o365CLIPath}" ${command}`, [], {});
+            return execresult;
+        }
+        catch (error) {
+            throw new Error(error);
         }
     });
 }
