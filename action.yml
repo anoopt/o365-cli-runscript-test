@@ -1,0 +1,12 @@
+name: "CLI Runscript"
+description: "CLI Runscript."
+author: "Anoop Tatti"
+branding:
+  icon: "calendar"
+  color: "orange"
+inputs:
+  SCRIPT_PATH:
+    description: "Path to script."
+runs:
+  using: "node12"
+  main: "dist/index.js"

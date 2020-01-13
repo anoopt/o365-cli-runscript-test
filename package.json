@@ -1,0 +1,21 @@
+{
+  "name": "cli-action-runscript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^13.1.6",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.1",
+    "@actions/exec": "^1.0.3",
+    "@actions/io": "^1.0.2"
+  }
+}
