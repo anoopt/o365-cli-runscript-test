@@ -77,6 +77,10 @@ function main() {
             const appFilePath = core.getInput("APP_FILE_PATH");
             const scope = core.getInput("SCOPE");
             const siteCollectionUrl = core.getInput("SITE_COLLECTION_URL");
+            const skipFeatureDeployment = core.getInput("SKIP_FEATURE_DEPLOYMENT") == "true" ? "--skipFeatureDeployment" : "";
+            const overwrite = core.getInput("OVERWRITE") == "true" ? "--overwrite" : "";
+            const verbose = core.getInput("VERBOSE") == "true" ? "--verbose" : "";
+            const debug = core.getInput("DEBUG") == "true" ? "--debug" : "";
             let appId;
             fs_1.access(appFilePath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
@@ -86,13 +90,13 @@ function main() {
                 else {
                     try {
                         if (scope == "sitecollection") {
-                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                            yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl}`);
-                            yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection`);
+                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${overwrite} ${verbose} ${debug}`);
+                            yield executeO365CLICommand(`spo app deploy --id ${appId} --scope sitecollection --appCatalogUrl ${siteCollectionUrl} ${skipFeatureDeployment} ${verbose} ${debug}`);
+                            yield executeO365CLICommand(`spo app install --id ${appId} --siteUrl ${siteCollectionUrl} --scope sitecollection ${verbose} ${debug}`);
                         }
                         else {
-                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} --overwrite`);
-                            yield executeO365CLICommand(`spo app deploy --id ${appId}`);
+                            appId = yield executeO365CLICommand(`spo app add -p ${appFilePath} ${overwrite} ${verbose} ${debug}`);
+                            yield executeO365CLICommand(`spo app deploy --id ${appId} ${skipFeatureDeployment} ${verbose} ${debug}`);
                         }
                     }
                     catch (error) {
