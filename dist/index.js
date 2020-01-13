@@ -67,20 +67,47 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(682));
 const exec_1 = __webpack_require__(736);
+const path_1 = __webpack_require__(622);
+const os_1 = __webpack_require__(87);
 const fs_1 = __webpack_require__(747);
+const TEMP_DIRECTORY = process.env.RUNNER_TEMP || os_1.tmpdir();
+function getCurrentTime() {
+    return new Date().getTime();
+}
+function createScriptFile(inlineScript) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const fileName = `O365_CLI_GITHUB_ACTION_${getCurrentTime().toString()}.sh`;
+        const filePath = path_1.join(TEMP_DIRECTORY, fileName);
+        fs_1.writeFileSync(filePath, `${inlineScript}`);
+        fs_1.chmodSync(filePath, 0o755);
+        return fileName;
+    });
+}
+function deleteFile(filePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (fs_1.existsSync(filePath)) {
+            try {
+                fs_1.unlinkSync(filePath);
+            }
+            catch (err) {
+                core.warning(err.toString());
+            }
+        }
+    });
+}
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH", { required: true });
+            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
             if (o365CLIScriptPath) {
+                core.info("ℹ️ Executing script from file...");
                 fs_1.access(o365CLIScriptPath, fs_1.constants.F_OK, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         core.error("🚨 Please check if the script path correct.");
                         core.setFailed(err.message);
                     }
                     else {
-                        core.info("ℹ️ Executing script...");
-                        const fileExtension = o365CLIScriptPath.split('.').pop();
+                        let fileExtension = o365CLIScriptPath.split('.').pop();
                         fs_1.chmodSync(o365CLIScriptPath, 0o755);
                         if (fileExtension == "ps1") {
                             yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
@@ -93,13 +120,33 @@ function main() {
                 }));
             }
             else {
-                core.error("🚨 Please provide - O365_CLI_SCRIPT_PATH - path to the file containing commands.");
-                core.setFailed("No arguments passed.");
+                let o365CLIScript = core.getInput("O365_CLI_SCRIPT");
+                if (o365CLIScript) {
+                    let o365CLIScriptFileName = '';
+                    try {
+                        core.info("ℹ️ Executing script passed...");
+                        o365CLIScriptFileName = yield createScriptFile(o365CLIScript);
+                        yield exec_1.exec(o365CLIScriptFileName);
+                        core.info("✅ Script execution complete.");
+                    }
+                    catch (err) {
+                        core.error("🚨 Executing script failed.");
+                        core.setFailed(err);
+                    }
+                    finally {
+                        const o365CLIScriptFilePath = path_1.join(TEMP_DIRECTORY, o365CLIScriptFileName);
+                        yield deleteFile(o365CLIScriptFilePath);
+                    }
+                }
+                else {
+                    core.error("🚨 Please pass either a command or a file containing commands.");
+                    core.setFailed("No arguments passed.");
+                }
             }
         }
-        catch (error) {
-            core.error("🚨 Executing script failed");
-            core.setFailed(error);
+        catch (err) {
+            core.error("🚨 Executing script failed.");
+            core.setFailed(err);
         }
     });
 }
