@@ -100,9 +100,9 @@ function main() {
                 core_1.setOutput("APP_ID", appId);
             }));
         }
-        catch (error) {
-            error("Executing script failed");
-            core_1.setFailed(error);
+        catch (err) {
+            core_1.error("Executing script failed");
+            core_1.setFailed(err);
         }
     });
 }
@@ -119,8 +119,9 @@ function executeO365CLICommand(command) {
             yield exec_1.exec(`"${o365CLIPath}" ${command}`, [], options);
             return o365CLICommandOutput;
         }
-        catch (error) {
-            throw new Error(error);
+        catch (err) {
+            core_1.error("Executing script failed");
+            core_1.setFailed(err);
         }
     });
 }

@@ -40,9 +40,9 @@ async function main() {
             }
             setOutput("APP_ID", appId);
         });
-    } catch (error) {
+    } catch (err) {
         error("Executing script failed");
-        setFailed(error);
+        setFailed(err);
     }
 }
 
@@ -58,8 +58,9 @@ async function executeO365CLICommand(command: string): Promise<any> {
         await exec(`"${o365CLIPath}" ${command}`, [], options);
         return o365CLICommandOutput;
     }
-    catch (error) {
-        throw new Error(error);
+    catch (err) {
+        error("Executing script failed");
+        setFailed(err);
     }
 }
 
