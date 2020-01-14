@@ -99,67 +99,61 @@ function deleteFile(filePath) {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        let o365CLIPath = yield io_1.which("o365", true);
-        if (o365CLIPath) {
-            try {
-                let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
-                if (o365CLIScriptPath) {
-                    core.info("ℹ️ Executing script from file...");
-                    if (fs_1.existsSync(o365CLIScriptPath)) {
-                        let fileExtension = o365CLIScriptPath.split('.').pop();
-                        fs_1.chmodSync(o365CLIScriptPath, 0o755);
-                        if (fileExtension == "ps1") {
-                            yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
+        try {
+            yield io_1.which("o365", true);
+            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
+            if (o365CLIScriptPath) {
+                core.info("ℹ️ Executing script from file...");
+                if (fs_1.existsSync(o365CLIScriptPath)) {
+                    let fileExtension = o365CLIScriptPath.split('.').pop();
+                    fs_1.chmodSync(o365CLIScriptPath, 0o755);
+                    if (fileExtension == "ps1") {
+                        yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
+                    }
+                    else {
+                        yield exec_1.exec(o365CLIScriptPath);
+                    }
+                    core.info("✅ Script execution complete.");
+                }
+                else {
+                    core.error("🚨 Please check if the script path correct.");
+                    core.setFailed("Path incorrect.");
+                }
+            }
+            else {
+                const o365CLIScript = core.getInput("O365_CLI_SCRIPT");
+                const o365CLIScriptIsPS = core.getInput("IS_POWERSHELL");
+                const isPowerShell = o365CLIScriptIsPS == "true" || null ? true : false;
+                if (o365CLIScript) {
+                    let o365CLIScriptFilePath = '';
+                    try {
+                        core.info("ℹ️ Executing script passed...");
+                        o365CLIScriptFilePath = yield createScriptFile(o365CLIScript, isPowerShell);
+                        if (isPowerShell) {
+                            yield exec_1.exec('pwsh', ['-f', o365CLIScriptFilePath]);
                         }
                         else {
-                            yield exec_1.exec(o365CLIScriptPath);
+                            yield exec_1.exec(o365CLIScriptFilePath);
                         }
                         core.info("✅ Script execution complete.");
                     }
-                    else {
-                        core.error("🚨 Please check if the script path correct.");
-                        core.setFailed("Path incorrect.");
+                    catch (err) {
+                        core.error("🚨 Executing script failed.");
+                        core.setFailed(err);
+                    }
+                    finally {
+                        yield deleteFile(o365CLIScriptFilePath);
                     }
                 }
                 else {
-                    const o365CLIScript = core.getInput("O365_CLI_SCRIPT");
-                    const o365CLIScriptIsPS = core.getInput("IS_POWERSHELL");
-                    const isPowerShell = o365CLIScriptIsPS == "true" || null ? true : false;
-                    if (o365CLIScript) {
-                        let o365CLIScriptFilePath = '';
-                        try {
-                            core.info("ℹ️ Executing script passed...");
-                            o365CLIScriptFilePath = yield createScriptFile(o365CLIScript, isPowerShell);
-                            if (isPowerShell) {
-                                yield exec_1.exec('pwsh', ['-f', o365CLIScriptFilePath]);
-                            }
-                            else {
-                                yield exec_1.exec(o365CLIScriptFilePath);
-                            }
-                            core.info("✅ Script execution complete.");
-                        }
-                        catch (err) {
-                            core.error("🚨 Executing script failed.");
-                            core.setFailed(err);
-                        }
-                        finally {
-                            yield deleteFile(o365CLIScriptFilePath);
-                        }
-                    }
-                    else {
-                        core.error("🚨 Please pass either a command or a file containing commands.");
-                        core.setFailed("No arguments passed.");
-                    }
+                    core.error("🚨 Please pass either a command or a file containing commands.");
+                    core.setFailed("No arguments passed.");
                 }
             }
-            catch (err) {
-                core.error("🚨 Executing script failed.");
-                core.setFailed(err);
-            }
         }
-        else {
-            core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
-            core.setFailed("Login action not run.");
+        catch (err) {
+            core.error("🚨 Executing script failed.");
+            core.setFailed(err);
         }
     });
 }

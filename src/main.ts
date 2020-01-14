@@ -32,61 +32,56 @@ async function deleteFile(filePath: string) {
 }
 
 async function main() {
-    let o365CLIPath: string = await which("o365", true);
-    if (o365CLIPath) {
-        try {
 
-            let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
-            if (o365CLIScriptPath) {
-                core.info("ℹ️ Executing script from file...");
-                if (existsSync(o365CLIScriptPath)) {
-                    let fileExtension = o365CLIScriptPath.split('.').pop();
-                    chmodSync(o365CLIScriptPath, 0o755);
-                    if (fileExtension == "ps1") {
-                        await exec('pwsh', ['-f', o365CLIScriptPath]);
+    try {
+        await which("o365", true);
+        let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
+        if (o365CLIScriptPath) {
+            core.info("ℹ️ Executing script from file...");
+            if (existsSync(o365CLIScriptPath)) {
+                let fileExtension = o365CLIScriptPath.split('.').pop();
+                chmodSync(o365CLIScriptPath, 0o755);
+                if (fileExtension == "ps1") {
+                    await exec('pwsh', ['-f', o365CLIScriptPath]);
+                } else {
+                    await exec(o365CLIScriptPath);
+                }
+                core.info("✅ Script execution complete.");
+            } else {
+                core.error("🚨 Please check if the script path correct.");
+                core.setFailed("Path incorrect.");
+            }
+        } else {
+            const o365CLIScript: string = core.getInput("O365_CLI_SCRIPT");
+            const o365CLIScriptIsPS: string = core.getInput("IS_POWERSHELL");
+            const isPowerShell: boolean = o365CLIScriptIsPS == "true" || null ? true : false;
+            if (o365CLIScript) {
+                let o365CLIScriptFilePath: string = '';
+                try {
+                    core.info("ℹ️ Executing script passed...");
+                    o365CLIScriptFilePath = await createScriptFile(o365CLIScript, isPowerShell);
+                    if (isPowerShell) {
+                        await exec('pwsh', ['-f', o365CLIScriptFilePath]);
                     } else {
-                        await exec(o365CLIScriptPath);
+                        await exec(o365CLIScriptFilePath);
                     }
                     core.info("✅ Script execution complete.");
-                } else {
-                    core.error("🚨 Please check if the script path correct.");
-                    core.setFailed("Path incorrect.");
+                } catch (err) {
+                    core.error("🚨 Executing script failed.");
+                    core.setFailed(err);
+                } finally {
+                    await deleteFile(o365CLIScriptFilePath);
                 }
+
             } else {
-                const o365CLIScript: string = core.getInput("O365_CLI_SCRIPT");
-                const o365CLIScriptIsPS: string = core.getInput("IS_POWERSHELL");
-                const isPowerShell: boolean = o365CLIScriptIsPS == "true" || null ? true : false;
-                if (o365CLIScript) {
-                    let o365CLIScriptFilePath: string = '';
-                    try {
-                        core.info("ℹ️ Executing script passed...");
-                        o365CLIScriptFilePath = await createScriptFile(o365CLIScript, isPowerShell);
-                        if (isPowerShell) {
-                            await exec('pwsh', ['-f', o365CLIScriptFilePath]);
-                        } else {
-                            await exec(o365CLIScriptFilePath);
-                        }
-                        core.info("✅ Script execution complete.");
-                    } catch (err) {
-                        core.error("🚨 Executing script failed.");
-                        core.setFailed(err);
-                    } finally {
-                        await deleteFile(o365CLIScriptFilePath);
-                    }
-
-                } else {
-                    core.error("🚨 Please pass either a command or a file containing commands.");
-                    core.setFailed("No arguments passed.");
-                }
+                core.error("🚨 Please pass either a command or a file containing commands.");
+                core.setFailed("No arguments passed.");
             }
-
-        } catch (err) {
-            core.error("🚨 Executing script failed.");
-            core.setFailed(err);
         }
-    } else {
-        core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
-        core.setFailed("Login action not run.");
+
+    } catch (err) {
+        core.error("🚨 Executing script failed.");
+        core.setFailed(err);
     }
 }
 
