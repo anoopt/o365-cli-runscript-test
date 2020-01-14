@@ -123,17 +123,22 @@ function main() {
             else {
                 const o365CLIScript = core.getInput("O365_CLI_SCRIPT");
                 const o365CLIScriptIsPS = core.getInput("IS_POWERSHELL");
-                const isPowerShell = o365CLIScriptIsPS == "true" || !o365CLIScriptIsPS.length ? true : false;
+                const isPowerShell = o365CLIScriptIsPS == "true" ? true : false;
                 if (o365CLIScript) {
                     let o365CLIScriptFilePath = '';
                     try {
-                        core.info("ℹ️ Executing script passed...");
+                        core.info("ℹ️ Executing script that was passed...");
                         o365CLIScriptFilePath = yield createScriptFile(o365CLIScript, isPowerShell);
                         if (isPowerShell) {
                             yield exec_1.exec('pwsh', ['-f', o365CLIScriptFilePath]);
                         }
                         else {
-                            yield exec_1.exec(o365CLIScriptFilePath);
+                            if (process.env.RUNNER_OS == "Windows") {
+                                yield exec_1.exec(`bash ${o365CLIScriptFilePath}`);
+                            }
+                            else {
+                                yield exec_1.exec(o365CLIScriptFilePath);
+                            }
                         }
                         core.info("✅ Script execution complete.");
                     }

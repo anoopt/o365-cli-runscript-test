@@ -3,7 +3,7 @@ import { exec } from '@actions/exec';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { which } from '@actions/io';
-import { chmodSync, access, constants, writeFileSync, existsSync, unlinkSync } from 'fs';
+import { chmodSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 
 const TEMP_DIRECTORY: string = process.env.RUNNER_TEMP || tmpdir();
 
@@ -54,16 +54,20 @@ async function main() {
         } else {
             const o365CLIScript: string = core.getInput("O365_CLI_SCRIPT");
             const o365CLIScriptIsPS: string = core.getInput("IS_POWERSHELL");
-            const isPowerShell: boolean = o365CLIScriptIsPS == "true" || !o365CLIScriptIsPS.length ? true : false;
+            const isPowerShell: boolean = o365CLIScriptIsPS == "true" ? true : false;
             if (o365CLIScript) {
                 let o365CLIScriptFilePath: string = '';
                 try {
-                    core.info("ℹ️ Executing script passed...");
+                    core.info("ℹ️ Executing script that was passed...");
                     o365CLIScriptFilePath = await createScriptFile(o365CLIScript, isPowerShell);
                     if (isPowerShell) {
                         await exec('pwsh', ['-f', o365CLIScriptFilePath]);
                     } else {
-                        await exec(o365CLIScriptFilePath);
+                        if(process.env.RUNNER_OS == "Windows")  {
+                            await exec(`bash ${o365CLIScriptFilePath}`);
+                        } else {
+                            await exec(o365CLIScriptFilePath);
+                        }
                     }
                     core.info("✅ Script execution complete.");
                 } catch (err) {
