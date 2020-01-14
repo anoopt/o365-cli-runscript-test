@@ -32,9 +32,10 @@ async function deleteFile(filePath: string) {
 }
 
 async function main() {
-    try {
-        let o365CLIPath: string = await which("o365", true);
-        if (o365CLIPath) {
+    let o365CLIPath: string = await which("o365", true);
+    if (o365CLIPath) {
+        try {
+
             let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
             if (o365CLIScriptPath) {
                 core.info("ℹ️ Executing script from file...");
@@ -60,7 +61,7 @@ async function main() {
                     try {
                         core.info("ℹ️ Executing script passed...");
                         o365CLIScriptFilePath = await createScriptFile(o365CLIScript, isPowerShell);
-                        if(isPowerShell) {
+                        if (isPowerShell) {
                             await exec('pwsh', ['-f', o365CLIScriptFilePath]);
                         } else {
                             await exec(o365CLIScriptFilePath);
@@ -78,14 +79,14 @@ async function main() {
                     core.setFailed("No arguments passed.");
                 }
             }
-        } else {
-            core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
-            core.setFailed("Login action not run.");
-        }
 
-    } catch (err) {
-        core.error("🚨 Executing script failed.");
-        core.setFailed(err);
+        } catch (err) {
+            core.error("🚨 Executing script failed.");
+            core.setFailed(err);
+        }
+    } else {
+        core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
+        core.setFailed("Login action not run.");
     }
 }
 

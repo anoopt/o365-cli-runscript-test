@@ -99,9 +99,9 @@ function deleteFile(filePath) {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let o365CLIPath = yield io_1.which("o365", true);
-            if (o365CLIPath) {
+        let o365CLIPath = yield io_1.which("o365", true);
+        if (o365CLIPath) {
+            try {
                 let o365CLIScriptPath = core.getInput("O365_CLI_SCRIPT_PATH");
                 if (o365CLIScriptPath) {
                     core.info("ℹ️ Executing script from file...");
@@ -152,14 +152,14 @@ function main() {
                     }
                 }
             }
-            else {
-                core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
-                core.setFailed("Login action not run.");
+            catch (err) {
+                core.error("🚨 Executing script failed.");
+                core.setFailed(err);
             }
         }
-        catch (err) {
-            core.error("🚨 Executing script failed.");
-            core.setFailed(err);
+        else {
+            core.error("🚨 Executing script failed - make sure you have run the Office 365 Login action.");
+            core.setFailed("Login action not run.");
         }
     });
 }
