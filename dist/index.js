@@ -123,7 +123,7 @@ function main() {
             else {
                 const o365CLIScript = core.getInput("O365_CLI_SCRIPT");
                 const o365CLIScriptIsPS = core.getInput("IS_POWERSHELL");
-                const isPowerShell = o365CLIScriptIsPS == "true" || null ? true : false;
+                const isPowerShell = o365CLIScriptIsPS == "true" || !o365CLIScriptIsPS.length ? true : false;
                 if (o365CLIScript) {
                     let o365CLIScriptFilePath = '';
                     try {
