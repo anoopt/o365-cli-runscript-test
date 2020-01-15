@@ -111,7 +111,12 @@ function main() {
                         yield exec_1.exec('pwsh', ['-f', o365CLIScriptPath]);
                     }
                     else {
-                        yield exec_1.exec(o365CLIScriptPath);
+                        if (process.env.RUNNER_OS == "Windows") {
+                            yield exec_1.exec(`bash ${o365CLIScriptPath}`);
+                        }
+                        else {
+                            yield exec_1.exec(o365CLIScriptPath);
+                        }
                     }
                     core.info("✅ Script execution complete.");
                 }

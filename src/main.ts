@@ -44,7 +44,11 @@ async function main() {
                 if (fileExtension == "ps1") {
                     await exec('pwsh', ['-f', o365CLIScriptPath]);
                 } else {
-                    await exec(o365CLIScriptPath);
+                    if(process.env.RUNNER_OS == "Windows")  {
+                        await exec(`bash ${o365CLIScriptPath}`);
+                    } else {
+                        await exec(o365CLIScriptPath);
+                    }
                 }
                 core.info("✅ Script execution complete.");
             } else {
