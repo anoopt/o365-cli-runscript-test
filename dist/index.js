@@ -133,7 +133,7 @@ function main() {
                             yield exec_1.exec('pwsh', ['-f', o365CLIScriptFilePath]);
                         }
                         else {
-                            yield exec_1.exec(o365CLIScriptFilePath);
+                            yield exec_1.exec(`bash ${o365CLIScriptFilePath}`);
                         }
                         core.info("✅ Script execution complete.");
                     }

@@ -63,7 +63,7 @@ async function main() {
                     if (isPowerShell) {
                         await exec('pwsh', ['-f', o365CLIScriptFilePath]);
                     } else {
-                        await exec(o365CLIScriptFilePath);
+                        await exec(`bash ${o365CLIScriptFilePath}`);
                     }
                     core.info("✅ Script execution complete.");
                 } catch (err) {
